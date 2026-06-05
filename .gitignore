@@ -1,0 +1,18 @@
+# Entornos virtuales de Python
+venv/
+.venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de macOS
+.DS_Store
+
+# Configuración local de Visual Studio Code
+.vscode/
+
+# Base de datos local generada durante las pruebas
+inventory.db
