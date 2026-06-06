@@ -329,5 +329,9 @@ def estadisticas_inventario() -> dict:
         "promedio_precio": promedio_precio if promedio_precio is not None else 0,
         "valor_total": valor_total if valor_total is not None else 0
     }
+
+if __name__ == "__main__":
+    # Inicia el servidor MCP
+    mcp.run()
     
 
