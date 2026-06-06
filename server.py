@@ -190,3 +190,144 @@ def listar_productos() -> list:
         for row in rows
     ]
 
+@mcp.tool()
+def calcular_valor_total_inventario() -> dict:
+    """
+    Calcula el valor económico total del inventario.
+    """
+
+    # Abrimos una conexión con la base de datos
+    conn = get_connection()
+
+    # Creamos un cursor para ejecutar la consulta SQL
+    cursor = conn.cursor()
+
+    # Calculamos la suma de cantidad por precio para todos los productos
+    cursor.execute(
+        "SELECT SUM(cantidad * precio) FROM productos"
+    )
+
+    # Obtenemos el resultado de la consulta
+    total = cursor.fetchone()[0]
+
+    # Cerramos la conexión
+    conn.close()
+
+    # Si la tabla está vacía, SQLite devuelve None; en ese caso retornamos 0
+    return {
+        "valor_total_inventario": total if total is not None else 0
+    }
+    
+@mcp.tool()
+def productos_agotados() -> list:
+    """
+    Retorna los productos cuya cantidad es igual a cero.
+    """
+
+    # Abrimos una conexión con la base de datos
+    conn = get_connection()
+
+    # Creamos un cursor para ejecutar la consulta SQL
+    cursor = conn.cursor()
+
+    # Consultamos los productos agotados
+    cursor.execute(
+        "SELECT * FROM productos WHERE cantidad = 0"
+    )
+
+    # Recuperamos todos los registros encontrados
+    rows = cursor.fetchall()
+
+    # Cerramos la conexión
+    conn.close()
+
+    # Convertimos cada fila en un diccionario
+    return [
+        {
+            "id": row[0],
+            "nombre": row[1],
+            "categoria": row[2],
+            "cantidad": row[3],
+            "precio": row[4]
+        }
+        for row in rows
+    ]
+
+@mcp.tool()
+def producto_mas_costoso() -> dict:
+    """
+    Retorna el producto con el mayor precio unitario.
+    """
+
+    # Abrimos una conexión con la base de datos
+    conn = get_connection()
+
+    # Creamos un cursor para ejecutar la consulta SQL
+    cursor = conn.cursor()
+
+    # Ordenamos los productos por precio de mayor a menor
+    # y seleccionamos únicamente el primero
+    cursor.execute(
+        "SELECT * FROM productos ORDER BY precio DESC LIMIT 1"
+    )
+
+    # Recuperamos el registro encontrado
+    row = cursor.fetchone()
+
+    # Cerramos la conexión
+    conn.close()
+
+    # Si existe al menos un producto, retornamos sus datos
+    if row:
+        return {
+            "id": row[0],
+            "nombre": row[1],
+            "categoria": row[2],
+            "cantidad": row[3],
+            "precio": row[4]
+        }
+
+    # Si la tabla está vacía, devolvemos un mensaje de error
+    return {"error": "No hay productos registrados"}
+
+@mcp.tool()
+def estadisticas_inventario() -> dict:
+    """
+    Calcula estadísticas generales del inventario.
+    """
+
+    # Abrimos una conexión con la base de datos
+    conn = get_connection()
+
+    # Creamos un cursor para ejecutar la consulta SQL
+    cursor = conn.cursor()
+
+    # Calculamos:
+    # 1. Número de productos registrados
+    # 2. Promedio de cantidades
+    # 3. Promedio de precios
+    # 4. Valor económico total del inventario
+    cursor.execute("""
+        SELECT
+            COUNT(*),
+            AVG(cantidad),
+            AVG(precio),
+            SUM(cantidad * precio)
+        FROM productos
+    """)
+
+    # Guardamos los resultados de la consulta en variables
+    total_productos, promedio_cantidad, promedio_precio, valor_total = cursor.fetchone()
+
+    # Cerramos la conexión
+    conn.close()
+
+    # Retornamos las estadísticas en un diccionario
+    return {
+        "total_productos": total_productos,
+        "promedio_cantidad": promedio_cantidad if promedio_cantidad is not None else 0,
+        "promedio_precio": promedio_precio if promedio_precio is not None else 0,
+        "valor_total": valor_total if valor_total is not None else 0
+    }
+    
+
